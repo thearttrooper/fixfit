@@ -98,25 +98,25 @@ class Fixer
 			if (0 == trackpoint_nodes.Count)
 				continue;
 
-			for (int iii = 1; iii < trackpoint_nodes.Count; ++iii)
+			for (int iii = 0; iii < trackpoint_nodes.Count - 1; ++iii)
 			{
-				XmlNode previous_trackpoint_node = trackpoint_nodes[iii - 1];
-				XmlNode previous_time_node =
-					previous_trackpoint_node.SelectSingleNode(
+				XmlNode trackpoint_node = trackpoint_nodes[iii];
+				XmlNode time_node =
+					trackpoint_node.SelectSingleNode(
 						"anon:Time",
 						m_NamespaceManager);
-				DateTime previous_time =
-					DateTime.Parse(previous_time_node.ChildNodes[0].Value);
-				XmlNode current_trackpoint_node = trackpoint_nodes[iii];
-				XmlNode current_time_node =
-					current_trackpoint_node.SelectSingleNode(
+				DateTime time =
+					DateTime.Parse(time_node.ChildNodes[0].Value);
+				XmlNode next_trackpoint_node = trackpoint_nodes[iii + 1];
+				XmlNode next_time_node =
+					next_trackpoint_node.SelectSingleNode(
 						"anon:Time",
 						m_NamespaceManager);
-				DateTime current_time =
-					DateTime.Parse(current_time_node.ChildNodes[0].Value);
-				TimeSpan delta = current_time - previous_time;
+				DateTime next_time =
+					DateTime.Parse(next_time_node.ChildNodes[0].Value);
+				TimeSpan delta = next_time - time;
 				XmlNode delta_node = XmlHlps.CreateNode(
-					previous_trackpoint_node,
+					trackpoint_node,
 					"Delta",
 					"http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2");
 
@@ -188,6 +188,8 @@ class Fixer
 				if (speed < MIN_SPEED)
 				{
 					bool found_next_good = false;
+
+					// Start search for good node from current bad node.
 					int jjj = iii;
 
 					while (!found_next_good && jjj < trackpoint_nodes.Count)
@@ -246,7 +248,7 @@ class Fixer
 					m_NamespaceManager);
 			DateTime time = DateTime.Parse(first_time_node.ChildNodes[0].Value);
 
-			// Reset start of lap to first good <Trcackpoint> node.
+			// Reset start of lap to first good <Trackpoint> node.
 			XmlHlps.SetAttr(
 				lap_node,
 				"StartTime",
